@@ -1,23 +1,13 @@
+#!pip install rdkit
+#!pip install chembl_webresource_client
+#!pip install padelpy
+# https://javadl.oracle.com/webapps/download/AutoDL?BundleId=247133_10e8cce67c7843478f41411b7003171c
+
 import requests
 import pandas as pd
 import numpy as np
 
 
-seq = "TGGTTGTTGTCATTAGCTGTATCGTGAATGACGATATA"
-
-complementry_seq = ""
-for letter in seq:
-    if letter.lower() == "A".lower():
-        complementry_seq += "T"
-    elif letter.lower() == "T".lower():
-        complementry_seq += "A" 
-    elif letter.lower() == "C".lower():
-        complementry_seq += "G"
-    elif letter.lower() == "G".lower():
-        complementry_seq += "C" 
-
-
-print(complementry_seq)
 
 
 # convert inchi to inchi key
