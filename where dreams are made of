@@ -1,0 +1,110 @@
+import math
+
+def get_one_world_trade_center_coords():
+    """
+    Return the (latitude, longitude) of One World Trade Center in degrees.
+    Source: approximate official coordinates.
+    """
+    # You can refine these if you have more precise data
+    return (40.7127437, -74.0133797)
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    """
+    Returns the great-circle distance (in meters) between two points on Earth 
+    specified by their latitude and longitude (in degrees).
+    
+    Uses the Haversine formula. Earth’s mean radius is taken as 6371000 m.
+    """
+    R = 6371000.0  # mean radius of Earth in meters
+    
+    # Convert degrees to radians
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    d_phi = math.radians(lat2 - lat1)
+    d_lambda = math.radians(lon2 - lon1)
+    
+    # Haversine formula
+    a = (math.sin(d_phi / 2.0) ** 2 
+         + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2.0) ** 2)
+    c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
+    
+    distance = R * c  # output distance in meters
+    return distance
+
+def hidden_height_due_to_earth_curvature(distance_m, observer_height_m, object_height_m):
+    """
+    Given:
+      - distance_m: distance between observer and object, in meters
+      - observer_height_m: height of observer above ground, in meters
+      - object_height_m: height of the distant object above ground, in meters
+
+    Returns how many meters of 'object_height_m' are hidden behind Earth’s curvature.
+
+    APPROXIMATE METHOD:
+      1. Compute the horizon distance for the observer: 
+         d_obs = sqrt(2 * R * h_obs + (h_obs)^2)
+      2. Compute the horizon distance for the object’s top:
+         d_obj = sqrt(2 * R * h_obj + (h_obj)^2)
+      3. If distance_m < d_obs:
+            hidden = 0   (the entire object is above your horizon)
+         elif distance_m > d_obs + d_obj:
+            hidden = object_height_m  (the entire object is below your horizon)
+         else:
+            # partial coverage (linear approximation in between)
+            hidden_fraction = (distance_m - d_obs) / d_obj
+            hidden = hidden_fraction * object_height_m
+    """
+    R = 6371000.0  # Earth radius in meters
+    
+    # Horizon distance for observer
+    d_obs = math.sqrt(2 * R * observer_height_m + observer_height_m**2)
+    # Horizon distance for object top
+    d_obj = math.sqrt(2 * R * object_height_m + object_height_m**2)
+    
+    # Check relative positions
+    if distance_m <= d_obs:
+        # The entire object is above the horizon
+        return 0.0
+    elif distance_m >= d_obs + d_obj:
+        # The entire object is below the horizon
+        return object_height_m
+    else:
+        # Partial coverage (linear approximation)
+        hidden_fraction = (distance_m - d_obs) / d_obj
+        return hidden_fraction * object_height_m
+
+def main():
+    # 1. Get your coordinates
+    my_lat, my_lon = 40.85499, -74.12762  # degrees
+    
+    # 2. Get One World Trade Center’s coordinates
+    wtc_lat, wtc_lon = get_one_world_trade_center_coords()
+    
+    # 3. Calculate distance between your location and One World Trade Center
+    distance_m = haversine_distance(my_lat, my_lon, wtc_lat, wtc_lon)
+    
+    # 4. Your elevation: assume ~12 m (4th floor ~ 3 m/floor)
+    #my_height_m = 12.0
+    my_height_m = 0
+    
+    # 5. One World Trade Center’s height (to the tip of spire)
+    wtc_height_m = 541.3  # meters
+    
+    # 6. Calculate how many meters are hidden
+    hidden_m = hidden_height_due_to_earth_curvature(distance_m, my_height_m, wtc_height_m)
+    
+    # 7. Calculate the percentage of total height that is obscured
+    percent_hidden = (hidden_m / wtc_height_m) * 100.0
+    
+    # 8. Print out the results
+    print(f"Your coordinates: ({my_lat:.5f}, {my_lon:.5f})")
+    print(f"One World Trade Center coordinates: ({wtc_lat:.7f}, {wtc_lon:.7f})")
+    print(f"Distance between you and One WTC: {distance_m/1000:.2f} km")
+    print(f"Observer height above ground: {my_height_m:.1f} m")
+    print(f"One WTC height: {wtc_height_m:.1f} m")
+    print(f"Hidden portion due to curvature: {hidden_m:.2f} m")
+    print(f"Percentage of WTC obscured: {percent_hidden:.2f} %")
+
+# Run the main function
+if __name__ == "__main__":
+    main()
