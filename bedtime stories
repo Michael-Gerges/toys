@@ -1,0 +1,138 @@
+
+import os, requests, uuid, base64, shutil, mimetypes,json, subprocess
+import speech_recognition as sr
+from pydub import AudioSegment
+from openai import OpenAI
+
+
+os.environ["OPENAI_API_KEY"] = "sk-proj-fsdfgasf-t-"
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+
+
+def quickread(text_input, character, speed):
+    import subprocess
+    def split_text(text, max_length=4096):
+        return [text[i:i+max_length] for i in range(0, len(text), max_length)]
+
+    chunks = split_text(text_input)
+    audio_chunks = []
+
+    voiceslist = ['nova', 'shimmer', 'echo', 'onyx', 'fable', 'alloy', 'ash', 'sage' ,'coral']
+    #character= voiceslist[-1]
+
+    for i, chunk in enumerate(chunks):
+            response = client.audio.speech.create(model="tts-1-hd-1106", voice=character.lower(), input=chunk, speed=speed)
+            # Store the content for combining later
+            audio_chunks.append(response.content)
+
+
+    combined_audio = b''.join(audio_chunks)  # Using byte join to concatenate
+    filename = "output.mp3"
+    
+    counter = 1
+    # Check if file exists and modify the name if necessary
+    while os.path.exists(filename):
+            filename = f"output({counter}).mp3"
+            counter += 1
+
+    with open(filename, "wb") as file:
+                file.write(combined_audio)
+    #subprocess.run(["powershell", "-c", f"(New-Object Media.SoundPlayer {filename}).PlaySync()"])
+
+    #os.startfile("output.mp3")         
+
+    from pydub import AudioSegment
+    import simpleaudio as sa
+
+    # Load the MP3 file
+    audio = AudioSegment.from_file(filename, format="mp3")
+
+    # Convert to raw audio for playback
+    play_obj = sa.play_buffer(audio.raw_data, num_channels=audio.channels, 
+                              bytes_per_sample=audio.sample_width, sample_rate=audio.frame_rate)
+
+    play_obj.wait_done()
+
+
+
+
+{"Alloy" : "Warm and engaging",
+    "Echo" : "Crisp and clear",
+    "Fable" : "Storytelling, expressive",
+    "Onyx" : "Deep, rich voice",
+    "Nova" : "Energetic and enthusiastic",
+    "Shimmer" : "Soft and melodic",
+    'Ash': "Described as having a clear and engaging tone, suitable for general-purpose applications.",
+    'Coral': "Noted for a warm and friendly demeanor, making it ideal for customer service interactions.",
+    'Sage': "Perceived as calm and authoritative, which could be beneficial for educational or informational conte"}
+
+
+
+# get some stories online using BeautifulSoup
+import requests
+from bs4 import BeautifulSoup
+import os
+
+# Base URL
+url = "https://storiestogrowby.org/bedtime-stories-for-kids/"
+
+# Function to fetch page content
+def get_soup(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return BeautifulSoup(response.text, "html.parser")
+    return None
+
+# Get main page soup
+soup = get_soup(url)
+
+# Find all story links
+story_links = []
+for link in soup.select("a"):
+    href = link.get("href")
+    if href and "/story/" in href:  # Filter story links
+        story_links.append(href)
+
+story_links = list(set(story_links))  # Remove duplicates
+
+# Folder to save stories
+os.makedirs("bedtime_stories", exist_ok=True)
+
+# Loop through each story and save text
+for story_url in story_links:
+    full_url = story_url if "https" in story_url else f"https://storiestogrowby.org{story_url}"
+    story_soup = get_soup(full_url)
+    
+    if story_soup:
+        # Extract story title
+        title = story_soup.find("h1").text.strip() if story_soup.find("h1") else "Unknown_Story"
+        title = title.replace("/", "-")  # Avoid invalid filename characters
+        
+        # Extract story text
+        paragraphs = story_soup.select("article p")
+        story_text = "\n".join(p.text.strip() for p in paragraphs if p.text.strip())
+        
+        # Save story to a file
+        if story_text:
+            with open(f"bedtime_stories/{title}.txt", "w", encoding="utf-8") as file:
+                file.write(story_text)
+            print(f"Saved: {title}")
+        else:
+            print(f"Skipping (No Text Found): {title}")
+
+print("✅ Done! All bedtime stories saved.")
+
+
+import os, random  # read a random story
+
+folder_path = "bedtime_stories"
+story_files = [f for f in os.listdir(folder_path) if f.endswith(".txt")]
+
+
+random_story = random.choice(story_files)
+story_path = os.path.join(folder_path, random_story)
+with open(story_path, "r", encoding="utf-8") as file:
+        inputt = file.read()
+
+quickread(inputt, "Shimmer", .85) 
